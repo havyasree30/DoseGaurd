@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="row mb-5 mt-3">
+    <!-- User Overview Card -->
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm border-0 text-center pb-4">
+            <div class="card-body">
+                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3 mt-3 shadow" style="width: 100px; height: 100px; font-size: 3rem;">
+                    <i class="bi bi-person"></i>
+                </div>
+                <h4 class="fw-bold mb-1">{{ session.get('user_name', 'User') }}</h4>
+                <p class="text-muted mb-3">{{ session.get('email', 'user@example.com') }}</p>
+                
+                <div class="d-inline-flex px-3 py-2 rounded-pill bg-light border border-secondary text-primary fw-bold text-uppercase" style="font-size: 0.85rem;">
+                    <i class="bi bi-person-badge me-2"></i> {{ session.get('user_role', 'Patient') }}
+                </div>
+                
+                <hr class="my-4 mx-3">
+                <div class="text-start px-3">
+                    <p class="text-muted mb-1 small text-uppercase fw-bold">Member Since</p>
+                    <p class="mb-0"><i class="bi bi-calendar3 me-2"></i>{{ session.get('created_at', '2024') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile / Actions -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 text-primary"><i class="bi bi-gear me-2"></i>Account Settings</h5>
+            </div>
+            <div class="card-body p-4">
+                
+                <!-- Update Profile Form -->
+                <h6 class="fw-bold mb-3 border-bottom pb-2">Update Profile</h6>
+                <form id="profileForm" action="{{ url_for('profile') }}" method="POST" class="mb-5" novalidate>
+                    <input type="hidden" name="action" value="update_profile">
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <label for="full_name" class="form-label fw-bold">Full Name</label>
+                            <input type="text" class="form-control" id="full_name" name="full_name" value="{{ session.get('user_name') }}" required>
+                            <div class="invalid-feedback">Full name is required.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label fw-bold">Email Address</label>
+                            <input type="email" class="form-control bg-light" id="readonly_email" value="{{ session.get('email', 'Linked Email') }}" readonly disabled>
+                            <div class="form-text">Email cannot be changed directly.</div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </form>
+
+                <!-- Change Password Form -->
+                <h6 class="fw-bold mb-3 border-bottom pb-2 text-danger"><i class="bi bi-shield-lock me-2"></i>Security</h6>
+                <form id="passwordForm" action="{{ url_for('profile') }}" method="POST" novalidate>
+                    <input type="hidden" name="action" value="change_password">
+                    
+                    <div class="mb-3">
+                        <label for="current_password" class="form-label fw-bold">Current Password</label>
+                        <input type="password" class="form-control" id="current_password" name="current_password" required>
+                        <div class="invalid-feedback">Current password is required.</div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <label for="new_password" class="form-label fw-bold">New Password</label>
+                            <input type="password" class="form-control" id="new_password" name="new_password" required>
+                            <div class="invalid-feedback">New password must be at least 6 characters.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="confirm_new_password" class="form-label fw-bold">Confirm New Password</label>
+                            <input type="password" class="form-control" id="confirm_new_password" name="confirm_new_password" required>
+                            <div class="invalid-feedback" id="confirmNewPasswordError">Passwords do not match.</div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-danger">Change Password</button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Profile Form Validation
+        $('#profileForm').submit(function(e) {
+            let isValid = true;
+            $('#full_name').removeClass('is-invalid');
+            
+            if ($('#full_name').val().trim() === '') {
+                $('#full_name').addClass('is-invalid');
+                isValid = false;
+            } else {
+                $('#full_name').addClass('is-valid');
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+            }
+        });
+
+        // Password Form Validation
+        $('#passwordForm').submit(function(e) {
+            let isValid = true;
+            $('#current_password, #new_password, #confirm_new_password').removeClass('is-invalid');
+            
+            if ($('#current_password').val() === '') {
+                $('#current_password').addClass('is-invalid');
+                isValid = false;
+            }
+
+            const newPassword = $('#new_password').val();
+            if (newPassword === '' || newPassword.length < 6) {
+                $('#new_password').addClass('is-invalid');
+                isValid = false;
+            }
+
+            const confirmPassword = $('#confirm_new_password').val();
+            if (confirmPassword === '' || confirmPassword !== newPassword) {
+                $('#confirm_new_password').addClass('is-invalid');
+                isValid = false;
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+            }
+        });
+
+        // Clear formatting on input
+        $('input').on('input', function() {
+            $(this).removeClass('is-invalid');
+        });
+    });
+</script>
+{% endblock %}

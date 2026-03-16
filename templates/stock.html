@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}Medicine Stock{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Medicine Stock</h2>
+    <a href="{{ url_for('medicines') }}" class="btn btn-outline-primary">
+        <i class="bi bi-box-arrow-up-right me-1"></i> Manage Medicines
+    </a>
+</div>
+
+<!-- Low Stock Alert Banner -->
+{% set low_stock_items = medicines|selectattr('quantity', '<=', request.args.get('threshold_for_filter', 5))|list %}
+{% if low_stock_items|length > 0 %}
+<div class="alert alert-warning border-start border-warning border-5 shadow-sm mb-4" role="alert">
+    <div class="d-flex align-items-center">
+        <i class="bi bi-exclamation-triangle-fill fs-3 me-3 text-warning"></i>
+        <div>
+            <h5 class="alert-heading mb-1 fw-bold">Low Stock Warning!</h5>
+            <p class="mb-0">You have <strong>{{ low_stock_items|length }}</strong> medication(s) running low. Time to arrange a refill.</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Stock Grid -->
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
+    {% for medicine in medicines %}
+    <!-- Set flag for low stock based on specific medicine threshold -->
+    {% set is_low = medicine.quantity <= medicine.low_stock_threshold %}
+    
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0 {% if is_low %}border-top border-danger border-4{% else %}border-top border-success border-4{% endif %}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h5 class="card-title fw-bold text-primary mb-0">{{ medicine.name }}</h5>
+                    {% if is_low %}
+                    <span class="badge bg-danger">Low Stock</span>
+                    {% else %}
+                    <span class="badge bg-success">OK</span>
+                    {% endif %}
+                </div>
+                
+                <h6 class="card-subtitle mb-2 text-muted">{{ medicine.dosage }}</h6>
+                
+                <div class="mt-4">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted small fw-bold">Current Quantity</span>
+                        <span class="fw-bold {% if is_low %}text-danger{% else %}text-success{% endif %} fs-5">{{ medicine.quantity }}</span>
+                    </div>
+                    <!-- Stock Progress Bar -->
+                    {% set percentage = (medicine.quantity / (medicine.quantity + 20)) * 100 %} <!-- Example calc -->
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar {% if is_low %}bg-danger{% else %}bg-success{% endif %}" role="progressbar" style="width: {% if percentage > 100 %}100{% else %}{{ percentage }}{% endif %}%;" aria-valuenow="{{ medicine.quantity }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-1">
+                        <span class="text-muted small" style="font-size: 0.75rem;">Threshold: {{ medicine.low_stock_threshold }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-white border-0 text-center pb-3">
+                <a href="{{ url_for('edit_medicine', id=medicine.id) }}" class="btn btn-sm btn-outline-secondary w-100">
+                    <i class="bi bi-pencil-square me-1"></i> Update Quantity
+                </a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-box-seam display-1 text-muted mb-3 d-block"></i>
+                <h4 class="text-muted">No stock data available</h4>
+                <p class="text-muted mb-4">Please add medicines to track their stock levels.</p>
+                <a href="{{ url_for('add_medicine') }}" class="btn btn-primary">Add Medicine</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+    <div>
+        <h2 class="mb-1 text-primary"><i class="bi bi-person-circle me-2"></i>Welcome, {{ session.get('user_name', 'User') }}!</h2>
+        <div class="text-muted small d-flex gap-3">
+            <span><i class="bi bi-person-badge me-1"></i>Role: <strong class="text-capitalize">{{ user_details.role if user_details else session.get('user_role', 'Patient') }}</strong></span>
+            <span><i class="bi bi-calendar-event me-1"></i>Joined: <strong>{{ user_details.created_at.strftime('%b %Y') if user_details else 'Recently' }}</strong></span>
+            {% if user_details and user_details.age %}
+            <span><i class="bi bi-balloon me-1"></i>Age: <strong>{{ user_details.age }}</strong></span>
+            {% endif %}
+            {% if user_details and user_details.weight %}
+            <span><i class="bi bi-speedometer2 me-1"></i>Weight: <strong>{{ user_details.weight }} kg</strong></span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('add_medicine') }}" class="btn btn-primary shadow-sm hover-scale">
+            <i class="bi bi-plus-circle me-1"></i> Add Medicine
+        </a>
+        <a href="{{ url_for('schedule') }}" class="btn btn-outline-primary shadow-sm hover-scale">
+            <i class="bi bi-calendar2-check me-1"></i> Schedule
+        </a>
+        <a href="{{ url_for('history') }}" class="btn btn-outline-secondary shadow-sm hover-scale">
+            <i class="bi bi-clock-history me-1"></i> History
+        </a>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-4 mb-5">
+    <!-- Adherence Graph Card (Takes up half width on large screens) -->
+    <div class="col-lg-6">
+        <div class="card h-100 shadow-sm border-0 bg-white">
+            <div class="card-header bg-transparent border-0 pt-4 pb-0">
+                <h6 class="text-uppercase text-muted fw-bold mb-0"><i class="bi bi-graph-up-arrow text-primary me-2"></i>Weekly Adherence</h6>
+            </div>
+            <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                <div class="position-relative d-inline-block" style="width: 150px; height: 150px;">
+                    <!-- Simple SVG Donut Chart representing Adherence -->
+                    <svg viewBox="0 0 36 36" class="circular-chart text-info">
+                        <path class="circle-bg"
+                            d="M18 2.0845
+                            a 15.9155 15.9155 0 0 1 0 31.831
+                            a 15.9155 15.9155 0 0 1 0 -31.831"
+                            fill="none" stroke="#eee" stroke-width="3"
+                        />
+                        <path class="circle"
+                            stroke-dasharray="{{ adherence_percentage|default('100') }}, 100"
+                            d="M18 2.0845
+                            a 15.9155 15.9155 0 0 1 0 31.831
+                            a 15.9155 15.9155 0 0 1 0 -31.831"
+                            fill="none" stroke="currentColor" stroke-width="3"
+                            stroke-linecap="round"
+                            style="animation: progress 1s ease-out forwards;"
+                        />
+                    </svg>
+                    <div class="position-absolute top-50 start-50 translate-middle text-center">
+                        <h2 class="mb-0 fw-bold">{{ adherence_percentage|default('100') }}%</h2>
+                        <small class="text-muted" style="font-size: 0.7rem;">Taken</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Side Stats grid -->
+    <div class="col-lg-6">
+        <div class="row g-4 h-100">
+            <div class="col-sm-6">
+                <div class="card bg-primary text-white h-100 shadow-sm border-0 d-flex flex-column justify-content-center align-items-center p-4">
+                    <i class="bi bi-journal-medical fs-1 mb-2 opacity-75"></i>
+                    <h2 class="mb-0 fw-bold">{{ medicines|length if medicines else 0 }}</h2>
+                    <h6 class="text-uppercase mb-0 text-white-50">Total Medicines</h6>
+                </div>
+            </div>
+            
+            <div class="col-sm-6">
+                <div class="card bg-success text-white h-100 shadow-sm border-0 d-flex flex-column justify-content-center align-items-center p-4">
+                    <i class="bi bi-calendar-day fs-1 mb-2 opacity-75"></i>
+                    <h2 class="mb-0 fw-bold">{{ todays_doses|default(0) }}</h2>
+                    <h6 class="text-uppercase mb-0 text-white-50">Today's Doses</h6>
+                </div>
+            </div>
+            
+            <div class="col-sm-12">
+                <div class="card bg-warning h-100 shadow-sm border-0 p-4">
+                    <div class="d-flex justify-content-between align-items-center h-100">
+                        <div>
+                            <h6 class="text-uppercase mb-1 text-dark-50">Low Stock Alerts</h6>
+                            <h2 class="mb-0 fw-bold text-dark">{{ low_stock_alerts|default(0) }}</h2>
+                        </div>
+                        <i class="bi bi-exclamation-triangle fs-1 text-dark-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions Grid -->
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <a href="{{ url_for('medicines') }}" class="text-decoration-none">
+            <div class="card bg-light border-primary border-bottom border-4 shadow-sm h-100 feature-card transition-hover">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-journal-medical text-primary display-4 mb-3 d-block"></i>
+                    <h5 class="card-title text-dark fw-bold">My Medicines</h5>
+                    <p class="text-muted small mb-0">Manage prescriptions, doses, and schedules.</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    
+    <div class="col-md-4">
+        <a href="{{ url_for('schedule') }}" class="text-decoration-none">
+            <div class="card bg-light border-success border-bottom border-4 shadow-sm h-100 feature-card transition-hover">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-clock-history text-success display-4 mb-3 d-block"></i>
+                    <h5 class="card-title text-dark fw-bold">Daily Schedule</h5>
+                    <p class="text-muted small mb-0">Check what you need to take today and mark them done.</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    
+    <div class="col-md-4">
+        <a href="{{ url_for('stock') }}" class="text-decoration-none">
+            <div class="card bg-light border-warning border-bottom border-4 shadow-sm h-100 feature-card transition-hover">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-box-seam text-warning display-4 mb-3 d-block"></i>
+                    <h5 class="card-title text-dark fw-bold">Stock Tracker</h5>
+                    <p class="text-muted small mb-0">View medication stock levels and refill alerts.</p>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Recent Medicines Section -->
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-list-ul me-2 text-primary"></i>Recent Configured Medicines</h5>
+        <a href="{{ url_for('medicines') }}" class="btn btn-sm btn-outline-primary">View All</a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Medicine Name</th>
+                        <th>Dosage</th>
+                        <th>Frequency</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if medicines %}
+                        {% for medicine in medicines[:5] %}
+                        <tr>
+                            <td class="ps-4 fw-bold text-primary">{{ medicine.name }}</td>
+                            <td>{{ medicine.dosage }}</td>
+                            <td><span class="badge bg-secondary">{{ medicine.frequency }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="3" class="text-center py-4 text-muted">
+                                <i class="bi bi-inbox fs-2 mb-2 d-block"></i>
+                                No medicines configured yet. <br>
+                                <a href="{{ url_for('add_medicine') }}" class="btn btn-sm btn-primary mt-2">Add your first medicine</a>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+.transition-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.transition-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+}
+</style>
+{% endblock %}

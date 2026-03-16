@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Medicine{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">Add New Medicine</h2>
+            <a href="{{ url_for('medicines') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to List
+            </a>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <form id="addMedicineForm" action="{{ url_for('add_medicine') }}" method="POST" novalidate>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <label for="name" class="form-label fw-bold">Medicine Name</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="e.g. Lisinopril" required>
+                            <div class="invalid-feedback" id="nameError">Medicine name is required.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="dosage" class="form-label fw-bold">Dosage</label>
+                            <input type="text" class="form-control" id="dosage" name="dosage" placeholder="e.g. 10mg, 1 tablet" required>
+                            <div class="invalid-feedback" id="dosageError">Dosage is required.</div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <label for="frequency" class="form-label fw-bold">Frequency</label>
+                            <select class="form-select" id="frequency" name="frequency" required>
+                                <option value="" selected disabled>Select frequency...</option>
+                                <option value="Once Daily">Once Daily</option>
+                                <option value="Twice Daily">Twice Daily</option>
+                                <option value="Three Times Daily">Three Times Daily</option>
+                                <option value="As Needed">As Needed</option>
+                                <option value="Weekly">Weekly</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a frequency.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="scheduled_time" class="form-label fw-bold">Scheduled Time(s)</label>
+                            <input type="text" class="form-control" id="scheduled_time" name="scheduled_time" placeholder="e.g. 08:00 AM, 08:00 PM" required>
+                            <div class="invalid-feedback">Scheduled time is required.</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="days" class="form-label fw-bold">Days</label>
+                        <select class="form-select" id="days" name="days" required>
+                            <option value="Everyday" selected>Everyday</option>
+                            <option value="Specific Days">Specific Days</option>
+                            <option value="As Needed">As Needed</option>
+                        </select>
+                    </div>
+
+                    <hr class="my-4">
+                    <h5 class="mb-3 text-primary"><i class="bi bi-box-seam me-2"></i>Stock Tracking</h5>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <label for="quantity" class="form-label fw-bold">Current Quantity</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity" min="0" placeholder="e.g. 30" required>
+                            <div class="invalid-feedback" id="qtyError">Please enter a valid positive quantity.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="low_stock_threshold" class="form-label fw-bold">Low Stock Threshold</label>
+                            <input type="number" class="form-control" id="low_stock_threshold" name="low_stock_threshold" min="0" placeholder="e.g. 5" required>
+                            <div class="invalid-feedback" id="thresholdError">Please enter a valid threshold.</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('medicines') }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4">Save Medicine</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('#addMedicineForm').submit(function(e) {
+            let isValid = true;
+            
+            $('.form-control, .form-select').removeClass('is-invalid');
+            
+            // Required text fields
+            const requiredFields = ['name', 'dosage', 'frequency', 'scheduled_time'];
+            requiredFields.forEach(function(field) {
+                if ($('#' + field).val() === '' || $('#' + field).val() === null) {
+                    $('#' + field).addClass('is-invalid');
+                    isValid = false;
+                } else {
+                    $('#' + field).removeClass('is-invalid').addClass('is-valid');
+                }
+            });
+
+            // Number fields validation
+            const qty = parseFloat($('#quantity').val());
+            if (isNaN(qty) || qty < 0 || $('#quantity').val() === '') {
+                $('#quantity').addClass('is-invalid');
+                isValid = false;
+            } else {
+                $('#quantity').removeClass('is-invalid').addClass('is-valid');
+            }
+
+            const threshold = parseFloat($('#low_stock_threshold').val());
+            if (isNaN(threshold) || threshold < 0 || $('#low_stock_threshold').val() === '') {
+                $('#low_stock_threshold').addClass('is-invalid');
+                isValid = false;
+            } else {
+                $('#low_stock_threshold').removeClass('is-invalid').addClass('is-valid');
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+            }
+        });
+
+        // Clear formatting on entry
+        $('.form-control, .form-select').on('input change', function() {
+            $(this).removeClass('is-invalid');
+        });
+    });
+</script>
+{% endblock %}

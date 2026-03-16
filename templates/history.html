@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Dose History{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Dose History</h2>
+</div>
+
+<!-- Filters -->
+<div class="card shadow-sm border-0 mb-4 bg-light">
+    <div class="card-body py-3">
+        <form action="{{ url_for('history') }}" method="GET" class="row g-3 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" name="medicine_name" placeholder="Filter by Medicine Name" value="{{ request.args.get('medicine_name', '') }}">
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                    <input type="date" class="form-control" name="date" value="{{ request.args.get('date', '') }}">
+                </div>
+            </div>
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- History Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        {% if history_records %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Medicine Name</th>
+                        <th>Scheduled Time</th>
+                        <th>Status</th>
+                        <th class="text-end pe-4">Logged At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in history_records %}
+                    <tr>
+                        <td class="ps-4 fw-bold text-primary">{{ record.medicine_name }}</td>
+                        <td><i class="bi bi-clock me-1 text-muted"></i>{{ record.scheduled_time }}</td>
+                        <td>
+                            {% if record.status == 'taken' %}
+                                <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Taken</span>
+                            {% elif record.status == 'missed' %}
+                                <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Missed</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ record.status|capitalize }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end pe-4 text-muted">{{ record.logged_at|default('N/A') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-clock-history display-1 text-muted mb-3 d-block"></i>
+            <h4 class="text-muted">No History Found</h4>
+            <p class="text-muted mb-0">No dose records match your current filters or you haven't logged any doses yet.</p>
+            {% if request.args %}
+            <a href="{{ url_for('history') }}" class="btn btn-outline-primary mt-3">Clear Filters</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

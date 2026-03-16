@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Today's Schedule{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Today's Schedule</h2>
+    <h5 class="text-muted mb-0"><i class="bi bi-calendar-event me-1"></i>{{ current_date|default('Today') }}</h5>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        {% if schedule %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Medicine Name</th>
+                        <th>Dosage</th>
+                        <th>Scheduled Time</th>
+                        <th>Status</th>
+                        <th class="text-end pe-4">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in schedule %}
+                    <tr>
+                        <td class="ps-4 fw-bold text-primary">{{ item.medicine_name }}</td>
+                        <td>{{ item.dosage }}</td>
+                        <td><i class="bi bi-clock me-1 text-muted"></i>{{ item.scheduled_time }}</td>
+                        <td>
+                            {% if item.status == 'taken' %}
+                                <span class="badge bg-success">Taken</span>
+                            {% elif item.status == 'missed' %}
+                                <span class="badge bg-danger">Missed</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end pe-4">
+                            {% if item.status == 'pending' or item.status == 'missed' %}
+                            <form action="{{ url_for('schedule') }}" method="POST" class="d-inline">
+                                <!-- Assuming a way to identify the dose being marked -->
+                                <input type="hidden" name="schedule_id" value="{{ item.id }}">
+                                <input type="hidden" name="action" value="mark_taken">
+                                <button type="submit" class="btn btn-sm btn-success">
+                                    <i class="bi bi-check-circle me-1"></i>Mark as Taken
+                                </button>
+                            </form>
+                            {% else %}
+                                <span class="text-muted"><i class="bi bi-check2-all"></i> Logged</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-calendar2-check display-1 text-success mb-3 d-block"></i>
+            <h4 class="text-muted">All clear for today!</h4>
+            <p class="text-muted mb-0">You don't have any scheduled doses pending for today.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
