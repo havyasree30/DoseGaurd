@@ -62,34 +62,6 @@ DoseGuard solves this by introducing:
 ### Database
 - SQLite / MySQL
 
-## Project Structure
-doseguard/
-│
-├── app.py
-├── config.py
-├── database.sql
-├── requirements.txt
-│
-├── templates/
-│ ├── base.html
-│ ├── index.html
-│ ├── login.html
-│ ├── register.html
-│ └── dashboard.html
-│ └── add_medicine.html
-│ └── edit_medicine.html
-│ └── history.html
-│ └── medicines.html
-│ └── profile.html
-│ └── schedule.html
-│ └── stock.html
-│
-├── static/
-│ ├── css/
-│ ├── js/
-│ └── images/
-
-
 To make further changes or develeop further, one can close this repository. Create a virtual environment in python.
 Then install all the requirements using pip install -r requirements.txt
 Make changes
